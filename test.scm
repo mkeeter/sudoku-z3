@@ -1,7 +1,7 @@
 (define (sym row col) (string->symbol (format #f "v~A~A" row col)))
 (define (bit row col) `(bvshl ((_ int2bv 9) 1) ,(sym row col)))
 
-(define (flatten f rows cols)
+(define (flatten f rows cols) ; Maps a function across two lists
   (let recurse ((rs rows) (cs cols))
     (cond ((null? rs) '())
           ((null? cs) (recurse (cdr rs) cols))
@@ -23,10 +23,9 @@
 
 (flatten ; Read the board from stdin and apply additional constraints
   (lambda (row col)
-    (let* ((c (read-char))
-           (i (- (char->integer c) (char->integer #\1))))
-    (if (and (>= i 1) (<= i 9))
-      (display `(assert (= ,(sym row col) ((_ int2bv 9) ,i)))))))
+    (let ((i (- (char->integer (read-char)) (char->integer #\1))))
+      (when (and (>= i 1) (<= i 9))
+        (display `(assert (= ,(sym row col) ((_ int2bv 9) ,i)))))))
   (iota 9 1) (iota 10 1)) ; (include a '\n' in column count)
 
 (display '(check-sat)) ; Solve, then print the resulting board
