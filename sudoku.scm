@@ -15,8 +15,8 @@
 ;; Apply block-level constraints
 (define (assert-block a b)
   (display `(assert (= ((_ int2bv 9) 511) ,(cons 'bvor (flatten bit a b))))))
-(map (lambda (i) (assert-block (list i) (iota 9 1))
-                 (assert-block (iota 9 1) (list i)))
+(map (lambda (i) (assert-block `(,i) (iota 9 1))
+                 (assert-block (iota 9 1) `(,i)))
      (iota 9 1))
 (flatten (lambda (row col) (assert-block (iota 3 row) (iota 3 col)))
   '(1 4 7) '(1 4 7))
