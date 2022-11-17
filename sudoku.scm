@@ -13,13 +13,14 @@
 (flatten declare-var (iota 9 1) (iota 9 1))
 
 ;; Apply block-level constraints
-(define (assert-block a b)
-  (display `(assert (= ((_ int2bv 9) 511) ,(cons 'bvor (flatten bit a b))))))
-(map (lambda (i) (assert-block `(,i) (iota 9 1))
-                 (assert-block (iota 9 1) `(,i)))
-     (iota 9 1))
-(flatten (lambda (row col) (assert-block (iota 3 row) (iota 3 col)))
-  '(1 4 7) '(1 4 7))
+(define mask `((_ int2bv 9) ,#b111111111))
+(define (bitor-block a b) (cons 'bvor (flatten bit a b)))
+(define (assert-block a b) (display `(assert (= ,mask ,(bitor-block a b)))))
+(define (assert-row row) (assert-block `(,row) (iota 9 1)))
+(define (assert-col col) (assert-block (iota 9 1) `(,col)))
+(define (assert-3x3 row col) (assert-block (iota 3 row) (iota 3 col)))
+(map (lambda (i) (assert-row i) (assert-col i)) (iota 9 1))
+(flatten assert-3x3 '(1 4 7) '(1 4 7))
 
 (flatten ; Read the board from stdin and apply additional constraints
   (lambda (row col)
@@ -29,8 +30,7 @@
   (iota 9 1) (iota 10 1)) ; (include a '\n' in column count)
 
 (display '(check-sat)) ; Solve, then print the resulting board
-(define (digit row col)
-  `(* ,(expt 10 (- 9 col)) (+ 1 (bv2int ,(sym row col)))))
+(define (digit row col) `(* ,(expt 10 (- 9 col)) (+ 1 (bv2int ,(sym row col)))))
 (define (print-row row)
   (display `(eval ,(cons '+ (map (lambda (col) (digit row col)) (iota 9 1))))))
 (map print-row (iota 9 1))
