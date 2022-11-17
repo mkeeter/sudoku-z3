@@ -22,12 +22,12 @@
 (map (lambda (i) (assert-row i) (assert-col i)) (iota 9 1))
 (flatten assert-3x3 '(1 4 7) '(1 4 7))
 
-(flatten ; Read the board from stdin and apply additional constraints
-  (lambda (row col)
-    (let ((i (- (char->integer (read-char)) (char->integer #\1))))
-      (when (and (>= i 1) (<= i 9))
-        (display `(assert (= ,(sym row col) ((_ int2bv 9) ,i)))))))
-  (iota 9 1) (iota 10 1)) ; (include a '\n' in column count)
+; Read the board from stdin and apply constraints for existing digits
+(define (assert-char row col)
+  (define i (- (char->integer (read-char)) (char->integer #\1)))
+  (when (and (>= i 1) (<= i 9))
+    (display `(assert (= ,(sym row col) ((_ int2bv 9) ,i))))))
+(flatten assert-char (iota 9 1) (iota 10 1)) ; (include a '\n' in column count)
 
 (display '(check-sat)) ; Solve, then print the resulting board
 (define (digit row col) `(* ,(expt 10 (- 9 col)) (+ 1 (bv2int ,(sym row col)))))
